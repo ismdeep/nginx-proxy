@@ -2,26 +2,28 @@ package main
 
 import (
 	"fmt"
-	"github.com/spf13/viper"
+	"gopkg.in/yaml.v3"
+	"io/ioutil"
 	"os"
 )
 
 func main() {
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-	viper.SetConfigFile(os.Getenv("CONFIG_FILE"))
-	if err := viper.ReadInConfig(); err != nil {
+	raw, err := ioutil.ReadFile(os.Getenv("CONFIG_FILE"))
+	if err != nil {
 		panic(err)
 	}
-	conf := &config{}
-	if err := viper.Unmarshal(conf); err != nil {
+	var conf config
+	if err := yaml.Unmarshal(raw, &conf); err != nil {
 		panic(err)
 	}
+
 	output := os.Getenv("UPSTREAM_OUTPUT_FILE")
 	f, err := os.OpenFile(output, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0777)
 	if err != nil {
 		panic(err)
 	}
+	defer f.Close()
+
 	for i := 0; i < len(conf.Proxies); i++ {
 		if conf.Proxies[i].Type == "" {
 			conf.Proxies[i].Type = "TCP"
@@ -33,5 +35,4 @@ func main() {
 			panic(err)
 		}
 	}
-	_ = f.Close()
 }
