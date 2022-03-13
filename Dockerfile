@@ -1,7 +1,7 @@
 FROM hub.deepin.com/library/golang:bullseye AS builder
 WORKDIR /src
 COPY . .
-RUN go build -o main github.com/ismdeep/nginx-proxy
+RUN go build -mod vendor -o main github.com/ismdeep/nginx-proxy
 
 FROM hub.deepin.com/library/nginx:latest
 RUN mkdir -p /etc/nginx/tcp.d
